@@ -36,9 +36,9 @@ impl Vec3 {
     pub fn lenght(&self) -> f32 {
         self.squared_length().sqrt()
     }
-    pub fn make_unit_vector(&self) -> Self {
+    pub fn make_unit_vector(&mut self) {
         let k = 1.0 / self.lenght();
-        Self::new(self.x() / k, self.y() / k, self.z() / k)
+        *self *= Vec3::new(k, k, k);
     }
 }
 
@@ -138,6 +138,12 @@ impl ops::Div<Vec3> for Vec3 {
     }
 }
 
+pub fn unit_vector(v: &Vec3) -> Vec3 {
+    let mut tmp = v.clone();
+    tmp.make_unit_vector();
+    tmp
+}
+
 #[test]
 fn test_nen() {
     let vec = Vec3::new(0.0, 1.0, 2.0);
@@ -147,13 +153,15 @@ fn test_nen() {
     assert_eq!(n_vec.z(), -2.0);
 }
 
+#[test]
 fn test_index() {
     let vec = Vec3::new(0.0, 1.0, 2.0);
     assert_eq!(vec[0], 0.0);
-    assert_eq!(vec[1], -1.0);
-    assert_eq!(vec[2], -2.0);
+    assert_eq!(vec[1], 1.0);
+    assert_eq!(vec[2], 2.0);
 }
 
+#[test]
 fn test_add_assign() {
     let mut vec = Vec3::new(0.0, 1.0, 2.0);
     vec += Vec3::new(3.0, 4.0, 5.0);
@@ -162,6 +170,7 @@ fn test_add_assign() {
     assert_eq!(vec.z(), 7.0);
 }
 
+#[test]
 fn test_sub_assign() {
     let mut vec = Vec3::new(0.0, 1.0, 2.0);
     vec -= Vec3::new(3.0, 4.0, 5.0);
@@ -170,6 +179,7 @@ fn test_sub_assign() {
     assert_eq!(vec.z(), -3.0);
 }
 
+#[test]
 fn test_mul_assign() {
     let mut vec = Vec3::new(0.0, 1.0, 2.0);
     vec *= Vec3::new(3.0, 4.0, 5.0);
@@ -178,6 +188,7 @@ fn test_mul_assign() {
     assert_eq!(vec.z(), 10.0);
 }
 
+#[test]
 fn test_div_assign() {
     let mut vec = Vec3::new(0.0, 1.0, 2.0);
     vec /= Vec3::new(3.0, 4.0, 5.0);
@@ -186,30 +197,54 @@ fn test_div_assign() {
     assert_eq!(vec.z(), 0.4);
 }
 
+#[test]
 fn test_add() {
-    let mut vec = Vec3::new(0.0, 1.0, 2.0) + Vec3::new(3.0, 4.0, 5.0);
+    let vec = Vec3::new(0.0, 1.0, 2.0) + Vec3::new(3.0, 4.0, 5.0);
     assert_eq!(vec.x(), 3.0);
     assert_eq!(vec.y(), 5.0);
     assert_eq!(vec.z(), 7.0);
 }
 
+#[test]
 fn test_sub() {
-    let mut vec = Vec3::new(0.0, 1.0, 2.0) - Vec3::new(3.0, 4.0, 5.0);
+    let vec = Vec3::new(0.0, 1.0, 2.0) - Vec3::new(3.0, 4.0, 5.0);
     assert_eq!(vec.x(), -3.0);
     assert_eq!(vec.y(), -3.0);
     assert_eq!(vec.z(), -3.0);
 }
 
+#[test]
 fn test_mul() {
-    let mut vec = Vec3::new(0.0, 1.0, 2.0) * Vec3::new(3.0, 4.0, 5.0);
+    let vec = Vec3::new(0.0, 1.0, 2.0) * Vec3::new(3.0, 4.0, 5.0);
     assert_eq!(vec.x(), 0.0);
     assert_eq!(vec.y(), 4.0);
     assert_eq!(vec.z(), 10.0);
 }
 
+#[test]
 fn test_div() {
-    let mut vec = Vec3::new(0.0, 1.0, 2.0) / Vec3::new(3.0, 4.0, 5.0);
+    let vec = Vec3::new(0.0, 1.0, 2.0) / Vec3::new(3.0, 4.0, 5.0);
     assert_eq!(vec.x(), 0.0);
     assert_eq!(vec.y(), 0.25);
     assert_eq!(vec.z(), 0.4);
+}
+
+#[test]
+fn test_make_unit_vector() {
+    let mut vec = Vec3::new(0.0, 1.0, 2.0);
+    vec.make_unit_vector();
+
+    const EPS: f32 = 1e-12;
+    assert!((vec.x() - 0.0).abs() < EPS);
+    assert!((vec.y() - 0.4472136).abs() < EPS);
+    assert!((vec.z() - 0.8944272).abs() < EPS);
+}
+#[test]
+fn test_unit_vector() {
+    let vec = unit_vector(&Vec3::new(0.0, 1.0, 2.0));
+
+    const EPS: f32 = 1e-12;
+    assert!((vec.x() - 0.0).abs() < EPS);
+    assert!((vec.y() - 0.4472136).abs() < EPS);
+    assert!((vec.z() - 0.8944272).abs() < EPS);
 }
