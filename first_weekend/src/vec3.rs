@@ -37,8 +37,7 @@ impl Vec3 {
         self.squared_length().sqrt()
     }
     pub fn make_unit_vector(&mut self) {
-        let k = 1.0 / self.lenght();
-        *self *= Vec3::new(k, k, k);
+        *self /= self.lenght();
     }
 }
 
@@ -82,11 +81,27 @@ impl ops::MulAssign<Vec3> for Vec3 {
     }
 }
 
+impl ops::MulAssign<f32> for Vec3 {
+    fn mul_assign(&mut self, rhs: f32) {
+        self.0[0] *= rhs;
+        self.0[1] *= rhs;
+        self.0[2] *= rhs;
+    }
+}
+
 impl ops::DivAssign<Vec3> for Vec3 {
     fn div_assign(&mut self, rhs: Vec3) {
         self.0[0] /= rhs.0[0];
         self.0[1] /= rhs.0[1];
         self.0[2] /= rhs.0[2];
+    }
+}
+
+impl ops::DivAssign<f32> for Vec3 {
+    fn div_assign(&mut self, rhs: f32) {
+        self.0[0] /= rhs;
+        self.0[1] /= rhs;
+        self.0[2] /= rhs;
     }
 }
 
@@ -126,6 +141,22 @@ impl ops::Mul<Vec3> for Vec3 {
     }
 }
 
+impl ops::Mul<f32> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, other: f32) -> Vec3 {
+        Self::new(self.x() * other, self.y() * other, self.z() * other)
+    }
+}
+
+impl ops::Mul<Vec3> for f32 {
+    type Output = Vec3;
+
+    fn mul(self, other: Vec3) -> Vec3 {
+        other * self
+    }
+}
+
 impl ops::Div<Vec3> for Vec3 {
     type Output = Vec3;
 
@@ -138,6 +169,13 @@ impl ops::Div<Vec3> for Vec3 {
     }
 }
 
+impl ops::Div<f32> for Vec3 {
+    type Output = Vec3;
+
+    fn div(self, other: f32) -> Vec3 {
+        Self::new(self.x() / other, self.y() / other, self.z() / other)
+    }
+}
 pub fn unit_vector(v: &Vec3) -> Vec3 {
     let mut tmp = v.clone();
     tmp.make_unit_vector();
@@ -219,6 +257,16 @@ fn test_mul() {
     assert_eq!(vec.x(), 0.0);
     assert_eq!(vec.y(), 4.0);
     assert_eq!(vec.z(), 10.0);
+
+    let vec = Vec3::new(0.0, 1.0, 2.0) * 2.0;
+    assert_eq!(vec.x(), 0.0);
+    assert_eq!(vec.y(), 2.0);
+    assert_eq!(vec.z(), 4.0);
+
+    let vec = 2.0 * Vec3::new(0.0, 1.0, 2.0);
+    assert_eq!(vec.x(), 0.0);
+    assert_eq!(vec.y(), 2.0);
+    assert_eq!(vec.z(), 4.0);
 }
 
 #[test]
@@ -227,6 +275,11 @@ fn test_div() {
     assert_eq!(vec.x(), 0.0);
     assert_eq!(vec.y(), 0.25);
     assert_eq!(vec.z(), 0.4);
+
+    let vec = Vec3::new(0.0, 1.0, 2.0) / 2.0;
+    assert_eq!(vec.x(), 0.0);
+    assert_eq!(vec.y(), 0.5);
+    assert_eq!(vec.z(), 1.0);
 }
 
 #[test]
