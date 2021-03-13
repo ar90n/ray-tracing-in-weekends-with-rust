@@ -176,10 +176,23 @@ impl ops::Div<f32> for Vec3 {
         Self::new(self.x() / other, self.y() / other, self.z() / other)
     }
 }
+
 pub fn unit_vector(v: &Vec3) -> Vec3 {
     let mut tmp = v.clone();
     tmp.make_unit_vector();
     tmp
+}
+
+pub fn dot(lhs: &Vec3, rhs: &Vec3) -> f32 {
+    lhs.x() * rhs.x() + lhs.y() * rhs.y() + lhs.z() * rhs.z()
+}
+
+pub fn cross(lhs: &Vec3, rhs: &Vec3) -> Vec3 {
+    Vec3::new(
+        lhs.y() * rhs.z() - lhs.z() * rhs.y(),
+        lhs.z() * rhs.x() - lhs.x() * rhs.z(),
+        lhs.x() * rhs.y() - lhs.y() * rhs.x(),
+    )
 }
 
 #[test]
@@ -300,4 +313,24 @@ fn test_unit_vector() {
     assert!((vec.x() - 0.0).abs() < EPS);
     assert!((vec.y() - 0.4472136).abs() < EPS);
     assert!((vec.z() - 0.8944272).abs() < EPS);
+}
+
+#[test]
+fn test_dot() {
+    let lhs = Vec3::new(0.0, 1.0, 2.0);
+    let rhs = Vec3::new(3.0, 4.0, 5.0);
+    let d = dot(&lhs, &rhs);
+
+    assert_eq!(d, 14.0);
+}
+
+#[test]
+fn test_cross() {
+    let lhs = Vec3::new(0.0, 1.0, 2.0);
+    let rhs = Vec3::new(3.0, 4.0, 5.0);
+    let c = cross(&lhs, &rhs);
+
+    assert_eq!(c.x(), -3.0);
+    assert_eq!(c.y(), 6.0);
+    assert_eq!(c.z(), -3.0);
 }
