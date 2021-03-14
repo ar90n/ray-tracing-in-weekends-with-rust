@@ -13,7 +13,7 @@ use rand::random;
 use camera::Camera;
 use hitable::*;
 use hitable_list::HitableList;
-use material::{Dielectric, Lambertian, Metal};
+use material::{Dielectric, Lambertian, Material, Metal};
 use ray::Ray;
 use sphere::Sphere;
 use vec3::{unit_vector, Vec3};
@@ -34,6 +34,61 @@ fn color(r: &Ray, world: &dyn Hitable, depth: u32) -> Vec3 {
     (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
 }
 
+fn random_scene() -> HitableList {
+    let n = 500;
+    let mut world: Vec<Box<dyn Hitable>> = vec![Box::new(Sphere::new(
+        Vec3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Rc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5))),
+    ))];
+    for a in -11..11 {
+        for b in -11..11 {
+            let center = Vec3::new(
+                a as f32 + 0.9 * random::<f32>(),
+                0.2,
+                b as f32 + 0.9 * random::<f32>(),
+            );
+            let choice = random::<f32>();
+            let material: Rc<dyn Material> = if choice < 0.8 {
+                Rc::new(Lambertian::new(Vec3::new(
+                    random::<f32>() * random::<f32>(),
+                    random::<f32>() * random::<f32>(),
+                    random::<f32>() * random::<f32>(),
+                )))
+            } else if choice < 0.95 {
+                Rc::new(Metal::new(
+                    Vec3::new(
+                        0.5 * (1.0 + random::<f32>()),
+                        0.5 * (1.0 + random::<f32>()),
+                        0.5 * (1.0 - random::<f32>()),
+                    ),
+                    0.5 * random::<f32>(),
+                ))
+            } else {
+                Rc::new(Dielectric::new(1.5))
+            };
+            world.push(Box::new(Sphere::new(center, 0.2, material)));
+        }
+    }
+    world.push(Box::new(Sphere::new(
+        Vec3::new(0.0, 1.0, 0.0),
+        1.0,
+        Rc::new(Dielectric::new(1.5)),
+    )));
+    world.push(Box::new(Sphere::new(
+        Vec3::new(-4.0, 1.0, 0.0),
+        1.0,
+        Rc::new(Lambertian::new(Vec3::new(0.4, 0.2, 0.1))),
+    )));
+    world.push(Box::new(Sphere::new(
+        Vec3::new(4.0, 1.0, 0.0),
+        1.0,
+        Rc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0)),
+    )));
+
+    world.into_iter().collect()
+}
+
 fn main() {
     let nx = 400;
     let ny = 200;
@@ -43,36 +98,7 @@ fn main() {
     println!("{} {}", &nx, &ny);
     println!("255");
 
-    let world: HitableList = vec![
-        Box::new(Sphere::new(
-            Vec3::new(0.0, 0.0, -1.0),
-            0.5,
-            Rc::new(Lambertian::new(Vec3::new(0.1, 0.2, 0.5))),
-        )) as Box<dyn Hitable>,
-        Box::new(Sphere::new(
-            Vec3::new(0.0, -100.5, -1.0),
-            100.0,
-            Rc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0))),
-        )) as Box<dyn Hitable>,
-        Box::new(Sphere::new(
-            Vec3::new(1.0, 0.0, -1.0),
-            0.5,
-            Rc::new(Metal::new(Vec3::new(0.8, 0.6, 0.2), 1.0)),
-        )) as Box<dyn Hitable>,
-        Box::new(Sphere::new(
-            Vec3::new(-1.0, 0.0, -1.0),
-            0.5,
-            Rc::new(Dielectric::new(1.5)),
-        )) as Box<dyn Hitable>,
-        Box::new(Sphere::new(
-            Vec3::new(-1.0, 0.0, -1.0),
-            -0.45,
-            Rc::new(Dielectric::new(1.5)),
-        )) as Box<dyn Hitable>,
-    ]
-    .into_iter()
-    .collect();
-
+    let world = random_scene();
     let lookfrom = Vec3::new(3.0, 3.0, 2.0);
     let lookat = Vec3::new(0.0, 0.0, -1.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
