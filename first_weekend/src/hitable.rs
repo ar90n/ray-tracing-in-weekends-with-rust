@@ -1,11 +1,14 @@
+use std::rc::Rc;
+
 use super::ray::Ray;
 use super::vec3::Vec3;
+use super::material::Material;
 
-#[derive(Clone, Debug)]
 pub struct HitRecord {
     pub t: f32,
     pub p: Vec3,
     pub normal: Vec3,
+    pub material: Rc<dyn Material>
 }
 
 pub trait Hitable {

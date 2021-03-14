@@ -1,15 +1,23 @@
+use std::rc::Rc;
+
 use super::hitable::{HitRecord, Hitable};
+use super::material::Material;
 use super::ray::Ray;
 use super::vec3::*;
 
 pub struct Sphere {
     center: Vec3,
     radius: f32,
+    material: Rc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f32) -> Self {
-        Self { center, radius }
+    pub fn new(center: Vec3, radius: f32, material: Rc<dyn Material>) -> Self {
+        Self {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -26,7 +34,12 @@ impl Hitable for Sphere {
                 let t = near_t;
                 let p = r.point_at_parameter(t);
                 let normal = (p - self.center) / self.radius;
-                return Some(HitRecord { t, p, normal });
+                return Some(HitRecord {
+                    t,
+                    p,
+                    normal,
+                    material: Rc::clone(&self.material),
+                });
             }
 
             let far_t = -(b - discriminant.sqrt()) / (2.0 * a);
@@ -34,7 +47,12 @@ impl Hitable for Sphere {
                 let t = far_t;
                 let p = r.point_at_parameter(t);
                 let normal = (p - self.center) / self.radius;
-                return Some(HitRecord { t, p, normal });
+                return Some(HitRecord {
+                    t,
+                    p,
+                    normal,
+                    material: Rc::clone(&self.material),
+                });
             }
         }
         None
