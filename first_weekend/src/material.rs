@@ -2,8 +2,6 @@ use std::f64::consts::PI;
 
 use rand::random;
 
-use crate::color;
-
 use super::hitable::HitRecord;
 use super::ray::Ray;
 use super::vec3::*;

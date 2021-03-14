@@ -8,7 +8,7 @@ mod vec3;
 
 use std::rc::Rc;
 
-use rand::prelude::*;
+use rand::random;
 
 use camera::Camera;
 use hitable::*;
@@ -35,10 +35,9 @@ fn color(r: &Ray, world: &dyn Hitable, depth: u32) -> Vec3 {
 }
 
 fn main() {
-    let nx = 200;
-    let ny = 100;
+    let nx = 400;
+    let ny = 200;
     let ns = 100;
-    let mut rng = rand::thread_rng();
 
     println!("P3");
     println!("{} {}", &nx, &ny);
@@ -73,20 +72,28 @@ fn main() {
     ]
     .into_iter()
     .collect();
+
+    let lookfrom = Vec3::new(3.0, 3.0, 2.0);
+    let lookat = Vec3::new(0.0, 0.0, -1.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let dist_to_focus = (lookfrom - lookat).lenght();
+    let aperture = 2.0;
     let cam = Camera::new(
-        &Vec3::new(-2.0, 2.0, 1.0),
-        &Vec3::new(0.0, 0.0, -1.0),
-        &Vec3::new(0.0, 1.0, 0.0),
-        90.0,
+        &lookfrom,
+        &lookat,
+        &vup,
+        20.0,
         nx as f32 / ny as f32,
+        aperture,
+        dist_to_focus,
     );
     for j in (0..ny).rev() {
         for i in 0..nx {
             let col = {
                 let mut col = Vec3::new(0.0, 0.0, 0.0);
                 for _ in 0..ns {
-                    let u = (i as f32 + rng.gen::<f32>()) / nx as f32;
-                    let v = (j as f32 + rng.gen::<f32>()) / ny as f32;
+                    let u = (i as f32 + random::<f32>()) / nx as f32;
+                    let v = (j as f32 + random::<f32>()) / ny as f32;
                     let r = cam.get_ray(u, v);
                     col += color(&r, &world, 0);
                 }
