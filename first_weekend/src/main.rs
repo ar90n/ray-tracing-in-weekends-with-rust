@@ -13,7 +13,7 @@ use rand::prelude::*;
 use camera::Camera;
 use hitable::*;
 use hitable_list::HitableList;
-use material::{Lambertian, Metal};
+use material::{Dielectric, Lambertian, Metal};
 use ray::Ray;
 use sphere::Sphere;
 use vec3::{unit_vector, Vec3};
@@ -48,7 +48,7 @@ fn main() {
         Box::new(Sphere::new(
             Vec3::new(0.0, 0.0, -1.0),
             0.5,
-            Rc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.3))),
+            Rc::new(Lambertian::new(Vec3::new(0.1, 0.2, 0.5))),
         )) as Box<dyn Hitable>,
         Box::new(Sphere::new(
             Vec3::new(0.0, -100.5, -1.0),
@@ -63,12 +63,23 @@ fn main() {
         Box::new(Sphere::new(
             Vec3::new(-1.0, 0.0, -1.0),
             0.5,
-            Rc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.3)),
+            Rc::new(Dielectric::new(1.5)),
+        )) as Box<dyn Hitable>,
+        Box::new(Sphere::new(
+            Vec3::new(-1.0, 0.0, -1.0),
+            -0.45,
+            Rc::new(Dielectric::new(1.5)),
         )) as Box<dyn Hitable>,
     ]
     .into_iter()
     .collect();
-    let cam = Camera::new();
+    let cam = Camera::new(
+        &Vec3::new(-2.0, 2.0, 1.0),
+        &Vec3::new(0.0, 0.0, -1.0),
+        &Vec3::new(0.0, 1.0, 0.0),
+        90.0,
+        nx as f32 / ny as f32,
+    );
     for j in (0..ny).rev() {
         for i in 0..nx {
             let col = {

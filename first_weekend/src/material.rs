@@ -2,6 +2,8 @@ use std::f64::consts::PI;
 
 use rand::random;
 
+use crate::color;
+
 use super::hitable::HitRecord;
 use super::ray::Ray;
 use super::vec3::*;
@@ -23,6 +25,25 @@ fn polar_to_cartesian(r: f32, theta: f32, phi: f32) -> Vec3 {
 
 fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
     *v - 2.0 * dot(v, n) * *n
+}
+
+fn refract(v: &Vec3, n: &Vec3, ni_over_nt: f32) -> Option<Vec3> {
+    let uv = unit_vector(v);
+    let dt = dot(&uv, n);
+    let discriminant = 1.0 - ni_over_nt * ni_over_nt * (1.0 - dt * dt);
+    if 0.0 < discriminant {
+        Some(ni_over_nt * (uv - *n * dt) - *n * discriminant.sqrt())
+    } else {
+        None
+    }
+}
+
+fn schlick(cosine: f32, ref_idx: f32) -> f32 {
+    let r0 = {
+        let r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+        r0 * r0
+    };
+    r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
 }
 
 pub trait Material {
@@ -53,7 +74,10 @@ pub struct Metal {
 
 impl Metal {
     pub fn new(albedo: Vec3, fuzz: f32) -> Self {
-        Self { albedo, fuzz: fuzz.min(1.0) }
+        Self {
+            albedo,
+            fuzz: fuzz.min(1.0),
+        }
     }
 }
 
@@ -66,5 +90,42 @@ impl Material for Metal {
         } else {
             None
         }
+    }
+}
+
+pub struct Dielectric {
+    ref_idx: f32,
+}
+
+impl Dielectric {
+    pub fn new(ref_idx: f32) -> Self {
+        Self { ref_idx }
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)> {
+        let (outward_normal, ni_over_nt, cosine_coeff) = if 0.0 < dot(r_in.direction(), &rec.normal)
+        {
+            (-rec.normal, self.ref_idx, self.ref_idx)
+        } else {
+            (rec.normal, 1.0 / self.ref_idx, -1.0)
+        };
+
+        let scatter_direction = refract(r_in.direction(), &outward_normal, ni_over_nt)
+            .and_then(|refracted| {
+                let cosine =
+                    cosine_coeff * dot(r_in.direction(), &rec.normal) / r_in.direction().lenght();
+                let refract_prob = schlick(cosine, self.ref_idx);
+                if refract_prob < random::<f32>() {
+                    Some(refracted)
+                } else {
+                    None
+                }
+            })
+            .unwrap_or_else(|| reflect(r_in.direction(), &rec.normal));
+        let attenuation = Vec3::new(1.0, 1.0, 1.0);
+        let scattered = Ray::new(rec.p, scatter_direction);
+        Some((attenuation, scattered))
     }
 }
