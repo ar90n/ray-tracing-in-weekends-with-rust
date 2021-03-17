@@ -41,11 +41,12 @@ fn random_scene() -> HitableList {
         1000.0,
         Rc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5))),
     ))];
-    for a in -11..11 {
-        for b in -11..11 {
+    for a in -15..15 {
+        for b in -15..15 {
+            let radius = 0.1 + 0.25 * random::<f32>();
             let center = Vec3::new(
                 a as f32 + 0.9 * random::<f32>(),
-                0.2,
+                radius,
                 b as f32 + 0.9 * random::<f32>(),
             );
             let choice = random::<f32>();
@@ -67,7 +68,7 @@ fn random_scene() -> HitableList {
             } else {
                 Rc::new(Dielectric::new(1.5))
             };
-            world.push(Box::new(Sphere::new(center, 0.2, material)));
+            world.push(Box::new(Sphere::new(center, radius, material)));
         }
     }
     world.push(Box::new(Sphere::new(
@@ -90,17 +91,17 @@ fn random_scene() -> HitableList {
 }
 
 fn main() {
-    let nx = 400;
-    let ny = 200;
-    let ns = 100;
+    let nx = 600;
+    let ny = 300;
+    let ns = 512;
 
     println!("P3");
     println!("{} {}", &nx, &ny);
     println!("255");
 
     let world = random_scene();
-    let lookfrom = Vec3::new(3.0, 3.0, 2.0);
-    let lookat = Vec3::new(0.0, 0.0, -1.0);
+    let lookfrom = Vec3::new(-15.0, 4.0, 10.0);
+    let lookat = Vec3::new(0.0, 1.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let dist_to_focus = (lookfrom - lookat).lenght();
     let aperture = 2.0;
@@ -108,7 +109,7 @@ fn main() {
         &lookfrom,
         &lookat,
         &vup,
-        20.0,
+        25.0,
         nx as f32 / ny as f32,
         aperture,
         dist_to_focus,
