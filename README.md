@@ -8,4 +8,4 @@ The ray tracer which was developped in the first weekend supports following feat
 * Defocus Blur support
 * Diffusion, Reflection and Refraction support
 
-![output]("https://raw.githubusercontent.com/ar90n/ray-tracing-in-weekends-with-rust/main/assets/output_firest_weekend.jpg")
+![output](https://raw.githubusercontent.com/ar90n/ray-tracing-in-weekends-with-rust/main/assets/output_firest_weekend.jpg)
