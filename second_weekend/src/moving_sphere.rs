@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use super::aabb::{surrounding_box, AABB};
 use super::hitable::{HitRecord, Hitable};
 use super::material::Material;
 use super::ray::Ray;
@@ -15,7 +16,14 @@ pub struct MovingSphere {
 }
 
 impl MovingSphere {
-    pub fn new(center0: Vec3, center1:Vec3, time0: f32, time1:f32, radius: f32, material: Rc<dyn Material>) -> Self {
+    pub fn new(
+        center0: Vec3,
+        center1: Vec3,
+        time0: f32,
+        time1: f32,
+        radius: f32,
+        material: Rc<dyn Material>,
+    ) -> Self {
         Self {
             center0,
             center1,
@@ -27,7 +35,8 @@ impl MovingSphere {
     }
 
     pub fn center(&self, time: f32) -> Vec3 {
-        self.center0 + (time - self.time0) / (self.time1 - self.time0) * (self.center1 - self.center0)
+        self.center0
+            + (time - self.time0) / (self.time1 - self.time0) * (self.center1 - self.center0)
     }
 }
 
@@ -66,5 +75,12 @@ impl Hitable for MovingSphere {
             }
         }
         None
+    }
+
+    fn bounding_box(&self, t0: f32, t1: f32) -> AABB {
+        let radius_vec = Vec3::new(self.radius, self.radius, self.radius);
+        let t0_aabb = AABB::new(self.center(t0) - radius_vec, self.center(t0) + radius_vec);
+        let t1_aabb = AABB::new(self.center(t1) - radius_vec, self.center(t1) + radius_vec);
+        surrounding_box(&t0_aabb, &t1_aabb)
     }
 }

@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use super::aabb::AABB;
 use super::hitable::{HitRecord, Hitable};
 use super::material::Material;
 use super::ray::Ray;
@@ -56,5 +57,10 @@ impl Hitable for Sphere {
             }
         }
         None
+    }
+
+    fn bounding_box(&self, _t0: f32, _t1: f32) -> AABB {
+        let radius_vec = Vec3::new(self.radius, self.radius, self.radius);
+        AABB::new(self.center - radius_vec, self.center + radius_vec)
     }
 }

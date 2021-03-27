@@ -6,6 +6,7 @@ mod ray;
 mod sphere;
 mod vec3;
 mod moving_sphere;
+mod aabb;
 
 use std::rc::Rc;
 
@@ -102,9 +103,9 @@ fn random_scene() -> HitableList {
 }
 
 fn main() {
-    let nx = 300;
-    let ny = 150;
-    let ns = 32;
+    let nx = 400;
+    let ny = 250;
+    let ns = 16;
 
     println!("P3");
     println!("{} {}", &nx, &ny);
