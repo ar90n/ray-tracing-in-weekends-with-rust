@@ -1,12 +1,13 @@
+mod aabb;
 mod camera;
 mod hitable;
 mod hitable_list;
 mod material;
+mod moving_sphere;
 mod ray;
 mod sphere;
+mod texture;
 mod vec3;
-mod moving_sphere;
-mod aabb;
 
 use std::rc::Rc;
 
@@ -16,9 +17,10 @@ use camera::Camera;
 use hitable::*;
 use hitable_list::HitableList;
 use material::{Dielectric, Lambertian, Material, Metal};
+use moving_sphere::MovingSphere;
 use ray::Ray;
 use sphere::Sphere;
-use moving_sphere::MovingSphere;
+use texture::{CheckerTexture, ConstantTexture};
 use vec3::{unit_vector, Vec3};
 
 fn color(r: &Ray, world: &dyn Hitable, depth: u32) -> Vec3 {
@@ -38,11 +40,14 @@ fn color(r: &Ray, world: &dyn Hitable, depth: u32) -> Vec3 {
 }
 
 fn random_scene() -> HitableList {
-    let n = 500;
+    let checker = CheckerTexture::new(
+        Box::new(ConstantTexture::new(Vec3::new(0.2, 0.3, 0.1))),
+        Box::new(ConstantTexture::new(Vec3::new(0.9, 0.9, 0.9))),
+    );
     let mut world: Vec<Box<dyn Hitable>> = vec![Box::new(Sphere::new(
         Vec3::new(0.0, -1000.0, 0.0),
         1000.0,
-        Rc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5))),
+        Rc::new(Lambertian::new(Box::new(checker))),
     ))];
     for a in -15..15 {
         for b in -15..15 {
@@ -54,11 +59,11 @@ fn random_scene() -> HitableList {
             );
             let material_choice = random::<f32>();
             let material: Rc<dyn Material> = if material_choice < 0.8 {
-                Rc::new(Lambertian::new(Vec3::new(
+                Rc::new(Lambertian::new(Box::new(ConstantTexture::new(Vec3::new(
                     random::<f32>() * random::<f32>(),
                     random::<f32>() * random::<f32>(),
                     random::<f32>() * random::<f32>(),
-                )))
+                )))))
             } else if material_choice < 0.95 {
                 Rc::new(Metal::new(
                     Vec3::new(
@@ -75,11 +80,12 @@ fn random_scene() -> HitableList {
             let obj_choice = random::<f32>();
             if obj_choice < 0.3 {
                 world.push(Box::new(Sphere::new(center, radius, material)));
-            }
-            else {
+            } else {
                 let center0 = center;
                 let center1 = center0 + Vec3::new(0.0, 1.5, 0.0) * random::<f32>();
-                world.push(Box::new(MovingSphere::new(center0, center1,  0.0, 1.0, radius,  material)));
+                world.push(Box::new(MovingSphere::new(
+                    center0, center1, 0.0, 1.0, radius, material,
+                )));
             }
         }
     }
@@ -91,7 +97,9 @@ fn random_scene() -> HitableList {
     world.push(Box::new(Sphere::new(
         Vec3::new(-4.0, 1.0, 0.0),
         1.0,
-        Rc::new(Lambertian::new(Vec3::new(0.4, 0.2, 0.1))),
+        Rc::new(Lambertian::new(Box::new(ConstantTexture::new(Vec3::new(
+            0.4, 0.2, 0.1,
+        ))))),
     )));
     world.push(Box::new(Sphere::new(
         Vec3::new(4.0, 1.0, 0.0),
@@ -103,9 +111,9 @@ fn random_scene() -> HitableList {
 }
 
 fn main() {
-    let nx = 400;
+    let nx = 300;
     let ny = 250;
-    let ns = 16;
+    let ns = 128;
 
     println!("P3");
     println!("{} {}", &nx, &ny);
@@ -126,7 +134,7 @@ fn main() {
         aperture,
         dist_to_focus,
         0.0,
-        1.0
+        1.0,
     );
     for j in (0..ny).rev() {
         for i in 0..nx {

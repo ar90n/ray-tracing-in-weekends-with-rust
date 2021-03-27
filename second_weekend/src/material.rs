@@ -4,6 +4,7 @@ use rand::random;
 
 use super::hitable::HitRecord;
 use super::ray::Ray;
+use super::texture::Texture;
 use super::vec3::*;
 
 fn random_in_unit_sphere() -> Vec3 {
@@ -49,11 +50,11 @@ pub trait Material {
 }
 
 pub struct Lambertian {
-    albedo: Vec3,
+    albedo: Box<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Vec3) -> Self {
+    pub fn new(albedo: Box<dyn Texture>) -> Self {
         Self { albedo }
     }
 }
@@ -61,7 +62,10 @@ impl Lambertian {
 impl Material for Lambertian {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)> {
         let target = rec.p + rec.normal + random_in_unit_sphere();
-        Some((self.albedo, Ray::new(rec.p, target - rec.p, r_in.time)))
+        Some((
+            self.albedo.value(0.0, 0.0, &rec.p),
+            Ray::new(rec.p, target - rec.p, r_in.time),
+        ))
     }
 }
 
@@ -82,7 +86,11 @@ impl Metal {
 impl Material for Metal {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)> {
         let reflected = reflect(&unit_vector(r_in.direction()), &rec.normal);
-        let scattered = Ray::new(rec.p, reflected + self.fuzz * random_in_unit_sphere(), r_in.time);
+        let scattered = Ray::new(
+            rec.p,
+            reflected + self.fuzz * random_in_unit_sphere(),
+            r_in.time,
+        );
         if 0.0 < dot(&reflected, &rec.normal) {
             Some((self.albedo, scattered))
         } else {
