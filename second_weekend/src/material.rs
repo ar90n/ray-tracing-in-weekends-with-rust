@@ -1,4 +1,4 @@
-use std::f64::consts::PI;
+use std::{collections::btree_set::Difference, f64::consts::PI};
 
 use rand::random;
 
@@ -47,6 +47,9 @@ fn schlick(cosine: f32, ref_idx: f32) -> f32 {
 
 pub trait Material {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)>;
+    fn emitted(&self, u: f32, v: f32, p: &Vec3) -> Vec3 {
+        Vec3::default()
+    }
 }
 
 pub struct Lambertian {
@@ -133,5 +136,25 @@ impl Material for Dielectric {
         let attenuation = Vec3::new(1.0, 1.0, 1.0);
         let scattered = Ray::new(rec.p, scatter_direction, r_in.time);
         Some((attenuation, scattered))
+    }
+}
+
+pub struct DiffuseLight {
+    emit: Box<dyn Texture>,
+}
+
+impl DiffuseLight {
+    pub fn new(emit: Box<dyn Texture>) -> Self {
+        Self { emit }
+    }
+}
+
+impl Material for DiffuseLight {
+    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord) -> Option<(Vec3, Ray)> {
+        None
+    }
+
+    fn emitted(&self, u: f32, v: f32, p: &Vec3) -> Vec3 {
+        self.emit.value(u, v, p)
     }
 }
