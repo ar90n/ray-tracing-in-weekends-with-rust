@@ -4,6 +4,7 @@ mod hitable;
 mod hitable_list;
 mod material;
 mod moving_sphere;
+mod perlin;
 mod ray;
 mod sphere;
 mod texture;
@@ -20,7 +21,7 @@ use material::{Dielectric, Lambertian, Material, Metal};
 use moving_sphere::MovingSphere;
 use ray::Ray;
 use sphere::Sphere;
-use texture::{CheckerTexture, ConstantTexture};
+use texture::{CheckerTexture, ConstantTexture, NoiseTexture};
 use vec3::{unit_vector, Vec3};
 
 fn color(r: &Ray, world: &dyn Hitable, depth: u32) -> Vec3 {
@@ -110,6 +111,23 @@ fn random_scene() -> HitableList {
     world.into_iter().collect()
 }
 
+fn simple_scene() -> HitableList {
+    let world: Vec<Box<dyn Hitable>> = vec![
+        Box::new(Sphere::new(
+            Vec3::new(0.0, -1000.0, 0.0),
+            1000.0,
+            Rc::new(Lambertian::new(Box::new(NoiseTexture::new(12.0)))),
+        )),
+        Box::new(Sphere::new(
+            Vec3::new(0.0, 2.0, 0.0),
+            2.0,
+            Rc::new(Lambertian::new(Box::new(NoiseTexture::new(12.0)))),
+        )),
+    ];
+
+    world.into_iter().collect()
+}
+
 fn main() {
     let nx = 300;
     let ny = 250;
@@ -119,17 +137,18 @@ fn main() {
     println!("{} {}", &nx, &ny);
     println!("255");
 
-    let world = random_scene();
-    let lookfrom = Vec3::new(-15.0, 4.0, 10.0);
-    let lookat = Vec3::new(0.0, 1.0, 0.0);
+    //let world = random_scene();
+    let world = simple_scene();
+    let lookfrom = Vec3::new(13.0, 2.0, 3.0);
+    let lookat = Vec3::new(0.0, 0.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = (lookfrom - lookat).lenght();
-    let aperture = 2.0;
+    let dist_to_focus = 10.0;
+    let aperture = 0.0;
     let cam = Camera::new(
         &lookfrom,
         &lookat,
         &vup,
-        25.0,
+        20.0,
         nx as f32 / ny as f32,
         aperture,
         dist_to_focus,

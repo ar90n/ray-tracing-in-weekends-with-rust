@@ -1,6 +1,6 @@
 use std::ops;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct Vec3([f32; 3]);
 impl Vec3 {
     pub fn new(e0: f32, e1: f32, e2: f32) -> Self {

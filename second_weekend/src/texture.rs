@@ -1,3 +1,4 @@
+use super::perlin::Perlin;
 use super::vec3::Vec3;
 
 pub trait Texture {
@@ -38,5 +39,25 @@ impl Texture for CheckerTexture {
         } else {
             self.even.value(u, v, p)
         }
+    }
+}
+
+pub struct NoiseTexture {
+    noise: Perlin,
+    scale: f32,
+}
+
+impl NoiseTexture {
+    pub fn new(scale: f32) -> Self {
+        Self {
+            noise: Perlin::default(),
+            scale,
+        }
+    }
+}
+
+impl Texture for NoiseTexture {
+    fn value(&self, _u: f32, _v: f32, p: &Vec3) -> Vec3 {
+        Vec3::new(1.0, 1.0, 1.0) * 0.5 * (self.scale * p.z() + 10.0 * self.noise.turb(p, 7)).sin()
     }
 }
