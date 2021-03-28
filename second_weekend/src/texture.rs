@@ -1,3 +1,5 @@
+use image::{Rgb, RgbImage};
+
 use super::perlin::Perlin;
 use super::vec3::Vec3;
 
@@ -59,5 +61,24 @@ impl NoiseTexture {
 impl Texture for NoiseTexture {
     fn value(&self, _u: f32, _v: f32, p: &Vec3) -> Vec3 {
         Vec3::new(1.0, 1.0, 1.0) * 0.5 * (self.scale * p.z() + 10.0 * self.noise.turb(p, 7)).sin()
+    }
+}
+
+pub struct ImageTexture {
+    data: RgbImage,
+}
+
+impl ImageTexture {
+    pub fn new(data: RgbImage) -> Self {
+        Self { data }
+    }
+}
+
+impl Texture for ImageTexture {
+    fn value(&self, u: f32, v: f32, _p: &Vec3) -> Vec3 {
+        let i = (u.max(0.0).min(1.0) * (self.data.width() - 1) as f32).floor() as u32;
+        let j = ((1.0 - v).max(0.0).min(1.0) * (self.data.height() - 1) as f32).floor() as u32;
+        let Rgb([r, g, b]) = self.data.get_pixel(i, j);
+        Vec3::new(*r as f32 / 255.0, *g as f32 / 255.0, *b as f32 / 255.0)
     }
 }

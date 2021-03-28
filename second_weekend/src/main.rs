@@ -10,8 +10,9 @@ mod sphere;
 mod texture;
 mod vec3;
 
-use std::rc::Rc;
+use std::{ptr::read, rc::Rc};
 
+use image::{io::Reader as ImageReader, RgbImage};
 use rand::random;
 
 use camera::Camera;
@@ -21,7 +22,7 @@ use material::{Dielectric, Lambertian, Material, Metal};
 use moving_sphere::MovingSphere;
 use ray::Ray;
 use sphere::Sphere;
-use texture::{CheckerTexture, ConstantTexture, NoiseTexture};
+use texture::{CheckerTexture, ConstantTexture, ImageTexture, NoiseTexture};
 use vec3::{unit_vector, Vec3};
 
 fn color(r: &Ray, world: &dyn Hitable, depth: u32) -> Vec3 {
@@ -112,6 +113,10 @@ fn random_scene() -> HitableList {
 }
 
 fn simple_scene() -> HitableList {
+    let img = ImageReader::open("./assets/texture.jpg")
+        .map(|reader| reader.decode().unwrap())
+        .map(|img| img.to_rgb8())
+        .unwrap();
     let world: Vec<Box<dyn Hitable>> = vec![
         Box::new(Sphere::new(
             Vec3::new(0.0, -1000.0, 0.0),
@@ -122,6 +127,11 @@ fn simple_scene() -> HitableList {
             Vec3::new(0.0, 2.0, 0.0),
             2.0,
             Rc::new(Lambertian::new(Box::new(NoiseTexture::new(12.0)))),
+        )),
+        Box::new(Sphere::new(
+            Vec3::new(0.0, 1.0, 2.0),
+            1.0,
+            Rc::new(Lambertian::new(Box::new(ImageTexture::new(img)))),
         )),
     ];
 

@@ -1,3 +1,4 @@
+use std::f64::consts::PI;
 use std::rc::Rc;
 
 use super::aabb::AABB;
@@ -5,6 +6,15 @@ use super::hitable::{HitRecord, Hitable};
 use super::material::Material;
 use super::ray::Ray;
 use super::vec3::*;
+
+fn get_sphere_uv(p: &Vec3, center: &Vec3) -> (f32, f32) {
+    let rp = *p - *center;
+    let phi = rp.z().atan2(rp.x());
+    let theta = rp.y().asin();
+    let u = 1.0 - (phi + PI as f32) / (2.0 * PI as f32);
+    let v = (2.0 * theta + PI as f32) / (2.0 * PI as f32);
+    (u, v)
+}
 
 pub struct Sphere {
     center: Vec3,
@@ -35,9 +45,12 @@ impl Hitable for Sphere {
                 let t = near_t;
                 let p = r.point_at_parameter(t);
                 let normal = (p - self.center) / self.radius;
+                let (u,v ) = get_sphere_uv(&p, &self.center);
                 return Some(HitRecord {
                     t,
                     p,
+                    u,
+                    v,
                     normal,
                     material: Rc::clone(&self.material),
                 });
@@ -48,9 +61,12 @@ impl Hitable for Sphere {
                 let t = far_t;
                 let p = r.point_at_parameter(t);
                 let normal = (p - self.center) / self.radius;
+                let (u,v ) = get_sphere_uv(&p, &self.center);
                 return Some(HitRecord {
                     t,
                     p,
+                    u,
+                    v,
                     normal,
                     material: Rc::clone(&self.material),
                 });

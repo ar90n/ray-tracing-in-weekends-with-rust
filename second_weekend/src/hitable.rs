@@ -8,6 +8,8 @@ use super::aabb::AABB;
 pub struct HitRecord {
     pub t: f32,
     pub p: Vec3,
+    pub u: f32,
+    pub v: f32,
     pub normal: Vec3,
     pub material: Rc<dyn Material>
 }

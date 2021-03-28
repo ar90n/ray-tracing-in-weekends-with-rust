@@ -56,6 +56,8 @@ impl Hitable for MovingSphere {
                 return Some(HitRecord {
                     t,
                     p,
+                    u: 0.0,
+                    v: 0.0,
                     normal,
                     material: Rc::clone(&self.material),
                 });
@@ -69,6 +71,8 @@ impl Hitable for MovingSphere {
                 return Some(HitRecord {
                     t,
                     p,
+                    u: 0.0,
+                    v: 0.0,
                     normal,
                     material: Rc::clone(&self.material),
                 });
