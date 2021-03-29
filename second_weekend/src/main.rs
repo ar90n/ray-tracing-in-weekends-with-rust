@@ -1,4 +1,5 @@
 mod aabb;
+mod box_;
 mod camera;
 mod hitable;
 mod hitable_list;
@@ -16,13 +17,14 @@ use std::rc::Rc;
 use image::io::Reader as ImageReader;
 use rand::random;
 
+use box_::Box_;
 use camera::Camera;
 use hitable::*;
 use hitable_list::HitableList;
 use material::{Dielectric, DiffuseLight, Lambertian, Material, Metal};
 use moving_sphere::MovingSphere;
 use ray::Ray;
-use rect::{FlipNormal, XYRect, XZRect, YZRect};
+use rect::{FlipNormal, RotateY, Translate, XYRect, XZRect, YZRect};
 use sphere::Sphere;
 use texture::{CheckerTexture, ConstantTexture, ImageTexture, NoiseTexture};
 use vec3::Vec3;
@@ -221,6 +223,28 @@ fn cornel_box() -> HitableList {
             555.0,
             Rc::clone(&white),
         )))),
+        Box::new(Translate::new(
+            Vec3::new(130.0, 0.0, 65.0),
+            Box::new(RotateY::new(
+                -18.0,
+                Box::new(Box_::new(
+                    Vec3::new(0.0, 0.0, 0.0),
+                    Vec3::new(165.0, 165.0, 165.0),
+                    Rc::clone(&white),
+                )),
+            )),
+        )),
+        Box::new(Translate::new(
+            Vec3::new(265.0, 0.0, 295.0),
+            Box::new(RotateY::new(
+                15.0,
+                Box::new(Box_::new(
+                    Vec3::new(0.0, 0.0, 0.0),
+                    Vec3::new(165.0, 330.0, 165.0),
+                    Rc::clone(&white),
+                )),
+            )),
+        )),
     ];
 
     world.into_iter().collect()
