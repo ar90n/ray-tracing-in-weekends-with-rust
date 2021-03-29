@@ -1,6 +1,7 @@
 mod aabb;
 mod box_;
 mod camera;
+mod constant_medium;
 mod hitable;
 mod hitable_list;
 mod material;
@@ -19,6 +20,7 @@ use rand::random;
 
 use box_::Box_;
 use camera::Camera;
+use constant_medium::ConstantMedium;
 use hitable::*;
 use hitable_list::HitableList;
 use material::{Dielectric, DiffuseLight, Lambertian, Material, Metal};
@@ -179,8 +181,14 @@ fn cornel_box() -> HitableList {
     let red: Rc<dyn Material> = Rc::new(Lambertian::new(Box::new(ConstantTexture::new(
         Vec3::new(0.65, 0.05, 0.05),
     ))));
-    let white: Rc<dyn Material> = Rc::new(Lambertian::new(Box::new(ConstantTexture::new(
+    let gray: Rc<dyn Material> = Rc::new(Lambertian::new(Box::new(ConstantTexture::new(
         Vec3::new(0.73, 0.73, 0.73),
+    ))));
+    let white: Rc<dyn Material> = Rc::new(Lambertian::new(Box::new(ConstantTexture::new(
+        Vec3::new(1.0, 1.0, 1.0),
+    ))));
+    let black: Rc<dyn Material> = Rc::new(Lambertian::new(Box::new(ConstantTexture::new(
+        Vec3::new(0.0, 0.0, 0.0),
     ))));
     let green: Rc<dyn Material> = Rc::new(Lambertian::new(Box::new(ConstantTexture::new(
         Vec3::new(0.12, 0.45, 0.15),
@@ -212,36 +220,44 @@ fn cornel_box() -> HitableList {
             0.0,
             555.0,
             555.0,
-            Rc::clone(&white),
+            Rc::clone(&gray),
         )))),
-        Box::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, Rc::clone(&white))),
+        Box::new(XZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, Rc::clone(&gray))),
         Box::new(FlipNormal::new(Box::new(XYRect::new(
             0.0,
             555.0,
             0.0,
             555.0,
             555.0,
-            Rc::clone(&white),
+            Rc::clone(&gray),
         )))),
-        Box::new(Translate::new(
-            Vec3::new(130.0, 0.0, 65.0),
-            Box::new(RotateY::new(
-                -18.0,
-                Box::new(Box_::new(
-                    Vec3::new(0.0, 0.0, 0.0),
-                    Vec3::new(165.0, 165.0, 165.0),
-                    Rc::clone(&white),
+        Box::new(ConstantMedium::new(
+            0.01,
+            Rc::clone(&black),
+            Box::new(Translate::new(
+                Vec3::new(130.0, 0.0, 65.0),
+                Box::new(RotateY::new(
+                    -18.0,
+                    Box::new(Box_::new(
+                        Vec3::new(0.0, 0.0, 0.0),
+                        Vec3::new(165.0, 165.0, 165.0),
+                        Rc::clone(&white),
+                    )),
                 )),
             )),
         )),
-        Box::new(Translate::new(
-            Vec3::new(265.0, 0.0, 295.0),
-            Box::new(RotateY::new(
-                15.0,
-                Box::new(Box_::new(
-                    Vec3::new(0.0, 0.0, 0.0),
-                    Vec3::new(165.0, 330.0, 165.0),
-                    Rc::clone(&white),
+        Box::new(ConstantMedium::new(
+            0.01,
+            Rc::clone(&white),
+            Box::new(Translate::new(
+                Vec3::new(265.0, 0.0, 295.0),
+                Box::new(RotateY::new(
+                    15.0,
+                    Box::new(Box_::new(
+                        Vec3::new(0.0, 0.0, 0.0),
+                        Vec3::new(165.0, 330.0, 165.0),
+                        Rc::clone(&black),
+                    )),
                 )),
             )),
         )),
@@ -253,7 +269,7 @@ fn cornel_box() -> HitableList {
 fn main() {
     let nx = 300;
     let ny = 300;
-    let ns = 128;
+    let ns = 1024;
 
     println!("P3");
     println!("{} {}", &nx, &ny);
